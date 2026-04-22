@@ -1,0 +1,84 @@
+# =========================
+# 🔐 ENV & SECRETS
+# =========================
+.env
+.env.*
+*.env
+
+# API keys / secrets
+secrets.json
+config.json
+
+# =========================
+# 🐍 PYTHON
+# =========================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+.venv/
+ENV/
+
+# Python build
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# =========================
+# 🧪 TEST / COVERAGE
+# =========================
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+
+# =========================
+# 🧾 LOGS
+# =========================
+*.log
+logs/
+*.out
+
+# =========================
+# 🧠 AI / LLM TEMP FILES
+# =========================
+embeddings/
+vectorstore/
+chroma_db/
+faiss_index/
+.cache/
+*.pkl
+
+# =========================
+# 🧰 IDE / EDITOR
+# =========================
+.vscode/
+.idea/
+*.iml
+
+# =========================
+# 🖥️ OS FILES
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# 🐳 DOCKER
+# =========================
+docker-compose.override.yml
+
+# =========================
+# 📦 FASTAPI / UVICORN
+# =========================
+*.pid
+*.sock
+
+# =========================
+# 📂 MISC
+# =========================
+tmp/
+temp/

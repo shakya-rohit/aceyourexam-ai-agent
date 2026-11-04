@@ -43,8 +43,9 @@ The agent intelligently calls backend APIs:
 
 ### 🔐 3. Secure Personalization (JWT Based)
 
-- JWT token passed from Angular → FastAPI → Backend
-- User identity extracted securely
+- Angular sends its JWT only to Spring Boot.
+- Spring Boot validates the token and derives the user ID from the authenticated principal.
+- Spring Boot calls FastAPI using a server-to-server key and forwards the user's JWT for user-scoped backend tool requests.
 - Supports queries like:
 
 ✅ “Show my results”  
@@ -100,15 +101,16 @@ This creates a **guided learning experience**.
 
 ## 🏗️ AI Architecture
 
-Angular UI  
-↓  
-FastAPI (AI Agent Layer)  
-↓  
-OpenAI (LLM + Tool Calling)  
-↓  
-Spring Boot APIs  
-↓  
-PostgreSQL
+Angular UI → Spring Boot → FastAPI AI agent → OpenAI
+                                     ↓
+                              Spring Boot APIs → PostgreSQL
+
+The browser calls Spring Boot at `/api/ai/ask`; it does not call the AI agent directly or send a `userId`.
+Spring Boot derives the user ID from the authenticated principal and calls the agent with
+`AI_AGENT_INTERNAL_API_KEY`. The agent uses the forwarded user JWT only when it calls user-scoped
+Spring Boot APIs. Set `AI_AGENT_BASE_URL` and the same `AI_AGENT_INTERNAL_API_KEY` in the backend
+and agent environments. Set `BACKEND_API_BASE_URL` in the agent environment to the backend's
+internal `/api` base URL. Do not expose the internal key to the frontend.
 
 ---
 

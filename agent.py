@@ -101,10 +101,8 @@ Rules:
 # -------------------------------
 # AGENT FUNCTION
 # -------------------------------
-def run_agent(user_query: str, req_messages=[], user_id=None, token=None):
-    
-    print("\n==============================")
-    print("🧠 USER QUERY:", user_query)
+def run_agent(user_query: str, req_messages=None, user_id=None, token=None):
+    req_messages = req_messages or []
 
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT}
@@ -118,8 +116,6 @@ def run_agent(user_query: str, req_messages=[], user_id=None, token=None):
     
     messages.append({"role": "user", "content": user_query})
 
-    print("\n📨 MESSAGES SENT TO LLM:", messages)
-
     response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=messages,
@@ -129,8 +125,6 @@ def run_agent(user_query: str, req_messages=[], user_id=None, token=None):
 
     message = response.choices[0].message
 
-    print("\n🤖 LLM RESPONSE:", message)
-
     # -------------------------------
     # TOOL CALL HANDLING
     # -------------------------------
@@ -139,33 +133,29 @@ def run_agent(user_query: str, req_messages=[], user_id=None, token=None):
         tool_name = tool_call.function.name
         args = json.loads(tool_call.function.arguments)
 
-        print(f"\n🛠 TOOL SELECTED: {tool_name}")
-        print("📥 ARGUMENTS:", args)
-
         # Execute tool
         if tool_name == "get_student_results":
-            result = get_student_results(user_id)
+            result = get_student_results(user_id, token)
         
         elif tool_name == "get_upcoming_exams":
-            result = get_upcoming_exams()
+            result = get_upcoming_exams(token)
 
         elif tool_name == "get_attempt_details":
-            result = get_attempt_details(args["attempt_id"])
+            result = get_attempt_details(args["attempt_id"], token)
 
         elif tool_name == "search_questions":
             result = search_questions(
                 args.get("subject"),
                 args.get("topic"),
-                args.get("difficulty")
+                args.get("difficulty"),
+                token
             )
         
         elif tool_name == "supported_exam_types":
-            result = supported_exam_types()
+            result = supported_exam_types(token)
             
         else:
             result = {"error": "Unknown tool"}
-
-        print("\n📤 TOOL RESULT:", result)
 
         # Append tool response
         messages.append(message)
@@ -181,12 +171,9 @@ def run_agent(user_query: str, req_messages=[], user_id=None, token=None):
             messages=messages
         )
 
-        print("\n✅ FINAL ANSWER GENERATED\n")
-
         return final.choices[0].message.content
 
     # -------------------------------
     # DIRECT RESPONSE
     # -------------------------------
-    print("\n⚡ DIRECT RESPONSE (no tool)\n")
     return message.content

@@ -1,135 +1,53 @@
+import os
+
 import requests
-import time
 
-BASE_URL = "http://localhost:8080/api"
 
-class AuthManager:
-    def __init__(self):
-        self.token = None
-        self.expiry_time = 0  # epoch times
+BASE_URL = os.getenv("BACKEND_API_BASE_URL", "http://localhost:8080/api").rstrip("/")
+REQUEST_TIMEOUT = (3, 20)
 
-    def get_token(self):
-        current_time = time.time()
 
-        # 🔥 If token missing OR expired → refresh
-        if self.token is None or current_time >= self.expiry_time:
-            print("🔄 Token expired or missing. Fetching new token...")
-
-            self.token = get_auth_token("admin@gmail.com", "password")
-
-            # 👉 set expiry to 30 mins from now
-            self.expiry_time = current_time + (30 * 60)
-
-            print("✅ New token stored. Expires at:", self.expiry_time)
-
-        return self.token
-
-auth_manager = AuthManager()
-
-def get_student_results(student_id: int):
-    print("📡 API CALL → get_student_results")
+def _get(path: str, user_authorization: str, params=None):
+    if not user_authorization or not user_authorization.startswith("Bearer "):
+        return {"error": "The authenticated user context is unavailable."}
 
     try:
-        token = auth_manager.get_token()
-        headers = {
-            "Authorization": f"Bearer {token}"
-        }
-
-        res = requests.get(f"{BASE_URL}/student/attempts/student/{student_id}", headers=headers)
-        return res.json()
-    except Exception as e:
-        return {"error": str(e)}
-
-def get_upcoming_exams():
-    print("📡 API CALL → get_upcoming_exams")
-
-    try:
-        token = auth_manager.get_token()
-        headers = {
-            "Authorization": f"Bearer {token}"
-        }
-
-        res = requests.get(f"{BASE_URL}/exams", headers=headers)
-        return res.json()
-    except Exception as e:
-        return {"error": str(e)}
-
-
-def get_attempt_details(attempt_id: int):
-    print("📡 API CALL → get_attempt_details")
-
-    try:
-        token = auth_manager.get_token()
-        headers = {
-            "Authorization": f"Bearer {token}"
-        }
-        res = requests.get(f"{BASE_URL}/student/attempts/{attempt_id}", headers=headers)
-        return res.json()
-    except Exception as e:
-        return {"error": str(e)}
-
-
-def search_questions(subject=None, topic=None, difficulty=None):
-    print("📡 API CALL → search_questions")
-
-    try:
-        token = auth_manager.get_token()
-        headers = {
-            "Authorization": f"Bearer {token}"
-        }
-
-        params = {}
-
-        if subject:
-            params["subject"] = subject
-        if topic:
-            params["topic"] = topic
-        if difficulty:
-            params["difficulty"] = difficulty
-
-        res = requests.get(f"{BASE_URL}/question-bank/search", params=params, headers=headers)
-        return res.json()
-    except Exception as e:
-        return {"error": str(e)}
-
-def supported_exam_types():
-    print("📡 API CALL → supported_exam_types")
-
-    try:
-        token = auth_manager.get_token()
-        headers = {
-            "Authorization": f"Bearer {token}"
-        }
-        res = requests.get(f"{BASE_URL}/exam-types", headers=headers)
-        return res.json()
-    except Exception as e:
-        return {"error": str(e)}
-
-def get_auth_token(email: str, password: str):
-    print("🔐 Logging in to get JWT token...")
-
-    try:
-        response = requests.post(
-            f"{BASE_URL}/auth/login",
-            json={
-                "email": email,
-                "password": password
-            }
+        response = requests.get(
+            f"{BASE_URL}{path}",
+            headers={"Authorization": user_authorization},
+            params=params,
+            timeout=REQUEST_TIMEOUT,
         )
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException:
+        return {"error": "The requested AceYourExam data is temporarily unavailable."}
 
-        data = response.json()
 
-        # 🔥 adjust key based on your backend response
-        token = data.get("token")
+def get_student_results(student_id: int, user_authorization: str):
+    return _get(f"/student/attempts/student/{student_id}", user_authorization)
 
-        if not token:
-            print("❌ Token not found in response:", data)
-            return None
 
-        print("✅ Token received")
-        return token
+def get_upcoming_exams(user_authorization: str):
+    return _get("/exams", user_authorization)
 
-    except Exception as e:
-        print("❌ Login failed:", str(e))
-        return None
 
+def get_attempt_details(attempt_id: int, user_authorization: str):
+    return _get(f"/student/attempts/{attempt_id}", user_authorization)
+
+
+def search_questions(subject=None, topic=None, difficulty=None, user_authorization=None):
+    params = {
+        key: value
+        for key, value in {
+            "subject": subject,
+            "topic": topic,
+            "difficulty": difficulty,
+        }.items()
+        if value
+    }
+    return _get("/student/ai-tools/question-search", user_authorization, params)
+
+
+def supported_exam_types(user_authorization: str):
+    return _get("/exam-types", user_authorization)

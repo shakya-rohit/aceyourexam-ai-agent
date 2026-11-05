@@ -12,6 +12,7 @@ from agent import run_agent
 
 # Uvicorn configures this logger and reliably displays application INFO logs.
 logger = logging.getLogger("uvicorn.error")
+MAX_HISTORY_MESSAGES = 20
 
 
 @asynccontextmanager
@@ -32,7 +33,7 @@ class ChatMessage(BaseModel):
 
 class QueryRequest(BaseModel):
     question: str = Field(min_length=1, max_length=4000)
-    messages: List[ChatMessage] = Field(default_factory=list)
+    messages: List[ChatMessage] = Field(default_factory=list, max_length=MAX_HISTORY_MESSAGES)
     userId: int = Field(gt=0)
 
 

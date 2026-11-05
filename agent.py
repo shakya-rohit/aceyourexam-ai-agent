@@ -172,12 +172,16 @@ def run_agent(user_query: str, req_messages=None, user_id=None, token=None):
                 "content": result_content
             })
 
-    # Avoid silently ignoring another tool request if the model reaches the
-    # safety limit. The most recent tool results are in the conversation.
+    # Allow one final answer from the completed tool results, but do not run a
+    # sixth tool round. If the model still needs another tool, report the limit
+    # rather than returning an answer that may be missing required data.
     final = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=messages,
         tools=tools,
-        tool_choice="none"
+        tool_choice="auto"
     )
-    return final.choices[0].message.content
+    final_message = final.choices[0].message
+    if final_message.tool_calls:
+        return "I couldn’t complete this request because it needs more data lookups than I can perform in one response. Please narrow the request and try again."
+    return final_message.content

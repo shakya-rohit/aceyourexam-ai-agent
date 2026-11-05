@@ -150,6 +150,11 @@ Rules:
 3. Give actionable insights.
 4. Suggest practice strategies.
 5. Be clear and helpful like a mentor.
+6. When using personal results or study plan data, include a `### What your data shows` section with concrete supporting facts from tool results (such as subject, score, attempt date, or topic). Never invent missing values. If the data is unavailable or a tool returned an error, say so plainly.
+7. Keep answers easy to scan: use short sections and concise bullets instead of long paragraphs. Separate observed data from your recommendation.
+8. In get_student_results, subjectScores are net marks, not counts of correct answers. They may be negative due to negative marking. Use correctCount for the count of correct answers. Attempts are sorted newest first by submittedAt; only call an attempt "latest" when its date is available.
+9. The question search and exam-question tools do not return verified answer keys or grading data. Never claim that an answer is correct, provide an answer key for retrieved questions, or offer to grade the student's answers. Explain that verified answer checking is unavailable if asked.
+10. End every answer with a heading exactly `### Try next` followed by 1–3 short, relevant follow-up actions. Each item must be a direct, concise request that starts with an action (for example, `Find 5 Biology questions about Biomolecules`). Do not include labels such as `Request:`, quotation marks, code formatting, or assistant invitations such as `Let me know if you want...`. Do not promise capabilities the tools do not provide.
 """
 
 

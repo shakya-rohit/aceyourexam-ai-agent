@@ -1,2 +1,16 @@
 Show my exam results and list my upcoming exams.
 Find my latest exam attempt, then give me a detailed analysis of it.
+What exam types does AceYourExam support?
+What subjects and topics can I study here?
+Show me my study plan for today and suggest how to prioritize it.
+List the exams I can access and summarize their dates and subjects.
+Find an exam I can access and tell me its duration, schedule, and other key details.
+Show me the questions for an exam I can currently access, then help me identify the topics I should review. Do not reveal answers.
+Find practice questions for Physics on mechanics at beginner difficulty.
+Search for medium difficulty questions about algebra and summarize what they cover.
+Based on my recent exam results, suggest practice questions for my weakest subject.
+Review my latest attempt, identify my weakest topics, and find practice questions for them.
+Compare my recent exam results and tell me whether my performance is improving.
+Show my available exams and today's study plan, then suggest a realistic study schedule.
+I have 30 minutes to study today. Use my study plan to recommend what I should focus on first.
+I don't know what to study next. Check my results, today's plan, and available practice topics, then recommend one next step.

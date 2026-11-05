@@ -1,22 +1,18 @@
-import os
-
 import requests
 
-
-BASE_URL = os.getenv("BACKEND_API_BASE_URL", "http://localhost:8080/api").rstrip("/")
-REQUEST_TIMEOUT = (3, 20)
+from config import BACKEND_API_BASE_URL, REQUEST_TIMEOUT
 
 
-def _get(path: str, user_authorization: str, params=None):
+def _get(path: str, user_authorization: str, params=None, request_timeout=REQUEST_TIMEOUT):
     if not user_authorization or not user_authorization.startswith("Bearer "):
         return {"error": "The authenticated user context is unavailable."}
 
     try:
         response = requests.get(
-            f"{BASE_URL}{path}",
+            f"{BACKEND_API_BASE_URL}{path}",
             headers={"Authorization": user_authorization},
             params=params,
-            timeout=REQUEST_TIMEOUT,
+            timeout=request_timeout,
         )
         response.raise_for_status()
         return response.json()
@@ -24,8 +20,12 @@ def _get(path: str, user_authorization: str, params=None):
         return {"error": "The requested AceYourExam data is temporarily unavailable."}
 
 
-def get_student_results(student_id: int, user_authorization: str):
-    attempts = _get(f"/student/attempts/student/{student_id}", user_authorization)
+def get_student_results(student_id: int, user_authorization: str, request_timeout=REQUEST_TIMEOUT):
+    attempts = _get(
+        f"/student/attempts/student/{student_id}",
+        user_authorization,
+        request_timeout=request_timeout,
+    )
     if not isinstance(attempts, list):
         return attempts
 
@@ -53,16 +53,20 @@ def get_student_results(student_id: int, user_authorization: str):
     }
 
 
-def get_upcoming_exams(user_authorization: str):
-    return _get("/exams", user_authorization)
+def get_upcoming_exams(user_authorization: str, request_timeout=REQUEST_TIMEOUT):
+    return _get("/exams", user_authorization, request_timeout=request_timeout)
 
 
-def get_exam_details(exam_id: int, user_authorization: str):
-    return _get(f"/exams/{exam_id}", user_authorization)
+def get_exam_details(exam_id: int, user_authorization: str, request_timeout=REQUEST_TIMEOUT):
+    return _get(f"/exams/{exam_id}", user_authorization, request_timeout=request_timeout)
 
 
-def get_exam_questions(exam_id: int, user_authorization: str):
-    questions = _get(f"/student/exams/{exam_id}/questions", user_authorization)
+def get_exam_questions(exam_id: int, user_authorization: str, request_timeout=REQUEST_TIMEOUT):
+    questions = _get(
+        f"/student/exams/{exam_id}/questions",
+        user_authorization,
+        request_timeout=request_timeout,
+    )
     if isinstance(questions, list):
         return {
             "questions": questions,
@@ -72,11 +76,16 @@ def get_exam_questions(exam_id: int, user_authorization: str):
     return questions
 
 
-def get_attempt_details(attempt_id: int, user_authorization: str):
-    return _get(f"/student/attempts/{attempt_id}", user_authorization)
+def get_attempt_details(attempt_id: int, user_authorization: str, request_timeout=REQUEST_TIMEOUT):
+    return _get(
+        f"/student/attempts/{attempt_id}",
+        user_authorization,
+        request_timeout=request_timeout,
+    )
 
 
-def search_questions(subject=None, topic=None, difficulty=None, user_authorization=None):
+def search_questions(subject=None, topic=None, difficulty=None, user_authorization=None,
+                    request_timeout=REQUEST_TIMEOUT):
     params = {
         key: value
         for key, value in {
@@ -86,7 +95,12 @@ def search_questions(subject=None, topic=None, difficulty=None, user_authorizati
         }.items()
         if value
     }
-    questions = _get("/student/ai-tools/question-search", user_authorization, params)
+    questions = _get(
+        "/student/ai-tools/question-search",
+        user_authorization,
+        params,
+        request_timeout=request_timeout,
+    )
     if isinstance(questions, list):
         return {
             "questions": questions,
@@ -96,13 +110,22 @@ def search_questions(subject=None, topic=None, difficulty=None, user_authorizati
     return questions
 
 
-def supported_exam_types(user_authorization: str):
-    return _get("/exam-types", user_authorization)
+def supported_exam_types(user_authorization: str, request_timeout=REQUEST_TIMEOUT):
+    return _get("/exam-types", user_authorization, request_timeout=request_timeout)
 
 
-def get_subjects(user_authorization: str):
-    return _get("/subjects", user_authorization, params={"includeTopics": "true"})
+def get_subjects(user_authorization: str, request_timeout=REQUEST_TIMEOUT):
+    return _get(
+        "/subjects",
+        user_authorization,
+        params={"includeTopics": "true"},
+        request_timeout=request_timeout,
+    )
 
 
-def get_today_study_plan(user_authorization: str):
-    return _get("/student/study-plan/today", user_authorization)
+def get_today_study_plan(user_authorization: str, request_timeout=REQUEST_TIMEOUT):
+    return _get(
+        "/student/study-plan/today",
+        user_authorization,
+        request_timeout=request_timeout,
+    )

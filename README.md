@@ -117,6 +117,11 @@ Spring Boot APIs. Set `AI_AGENT_BASE_URL` and the same `AI_AGENT_INTERNAL_API_KE
 and agent environments. Set `BACKEND_API_BASE_URL` in the agent environment to the backend's
 internal `/api` base URL. Do not expose the internal key to the frontend.
 
+For local development, copy this directory's `.env.example` to `.env` beside `main.py` and fill in
+the values. `config.py` loads that file; machine-provided environment variables take precedence.
+Keep `.env` untracked and use the deployment platform's environment settings or secret store in
+production. Configure `AI_AGENT_BASE_URL` on the backend to point to this service.
+
 ---
 
 ## 🔁 Request Flow

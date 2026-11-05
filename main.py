@@ -1,23 +1,21 @@
 from contextlib import asynccontextmanager
 import hmac
 import logging
-import os
 import time
 import uuid
 from typing import List, Literal, Optional
 
 from fastapi import FastAPI, Header, HTTPException
 from pydantic import BaseModel, Field
+
+from config import AI_AGENT_INTERNAL_API_KEY, MAX_HISTORY_MESSAGES
 from agent import run_agent
 
 # Uvicorn configures this logger and reliably displays application INFO logs.
 logger = logging.getLogger("uvicorn.error")
-MAX_HISTORY_MESSAGES = 20
-
-
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
-    if os.getenv("AI_AGENT_INTERNAL_API_KEY", "").strip():
+    if AI_AGENT_INTERNAL_API_KEY.strip():
         logger.info("AI_AGENT_INTERNAL_API_KEY is configured")
     else:
         logger.error("AI_AGENT_INTERNAL_API_KEY is not configured; /ask requests will be unavailable")
@@ -49,7 +47,7 @@ def ask_agent(
     user_authorization: Optional[str] = Header(None, alias="X-User-Authorization"),
 ):
     request_id = uuid.uuid4().hex[:12]
-    expected_key = os.getenv("AI_AGENT_INTERNAL_API_KEY", "")
+    expected_key = AI_AGENT_INTERNAL_API_KEY
     if not expected_key:
         logger.error("AI request %s rejected: AI_AGENT_INTERNAL_API_KEY is not configured", request_id)
         raise HTTPException(status_code=503, detail="AI agent service authentication is not configured")

@@ -33,9 +33,14 @@ The agent intelligently calls backend APIs:
 | Tool                   | Purpose                      |
 | ---------------------- | ---------------------------- |
 | `get_student_results`  | Fetch past exam results      |
+| `get_upcoming_exams`   | List exams available to the student |
+| `get_exam_details`     | Fetch details for an accessible exam |
+| `get_exam_questions`   | Fetch questions for an exam currently available to the student |
 | `get_attempt_details`  | Deep analysis of attempts    |
 | `search_questions`     | Recommend practice questions |
 | `supported_exam_types` | Show supported exams         |
+| `get_subjects`         | List available subjects and topics |
+| `get_today_study_plan` | Fetch the personalized plan for today |
 
 👉 No hardcoding — AI decides dynamically.
 

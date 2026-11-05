@@ -32,6 +32,14 @@ def get_upcoming_exams(user_authorization: str):
     return _get("/exams", user_authorization)
 
 
+def get_exam_details(exam_id: int, user_authorization: str):
+    return _get(f"/exams/{exam_id}", user_authorization)
+
+
+def get_exam_questions(exam_id: int, user_authorization: str):
+    return _get(f"/student/exams/{exam_id}/questions", user_authorization)
+
+
 def get_attempt_details(attempt_id: int, user_authorization: str):
     return _get(f"/student/attempts/{attempt_id}", user_authorization)
 
@@ -51,3 +59,11 @@ def search_questions(subject=None, topic=None, difficulty=None, user_authorizati
 
 def supported_exam_types(user_authorization: str):
     return _get("/exam-types", user_authorization)
+
+
+def get_subjects(user_authorization: str):
+    return _get("/subjects", user_authorization, params={"includeTopics": "true"})
+
+
+def get_today_study_plan(user_authorization: str):
+    return _get("/student/study-plan/today", user_authorization)

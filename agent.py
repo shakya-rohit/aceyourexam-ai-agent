@@ -5,8 +5,12 @@ from tools import (
     get_student_results,
     get_attempt_details,
     get_upcoming_exams,
+    get_exam_details,
+    get_exam_questions,
     search_questions,
-    supported_exam_types
+    supported_exam_types,
+    get_subjects,
+    get_today_study_plan
 )
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -31,10 +35,38 @@ tools = [
         "type": "function",
         "function": {
             "name": "get_upcoming_exams",
-            "description": "Get upcoming exams for the logged-in user",
+            "description": "List exams available to the logged-in user",
             "parameters": {
                 "type": "object",
                 "properties": {}
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_exam_details",
+            "description": "Get details for an exam the logged-in user can access",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "exam_id": {"type": "integer"}
+                },
+                "required": ["exam_id"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_exam_questions",
+            "description": "Get questions for an exam the logged-in user is currently allowed to access; this returns no answer key",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "exam_id": {"type": "integer"}
+                },
+                "required": ["exam_id"]
             }
         }
     },
@@ -77,6 +109,28 @@ tools = [
                 "properties": {
                     
                 }
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_subjects",
+            "description": "List available subjects and their topics for study and practice",
+            "parameters": {
+                "type": "object",
+                "properties": {}
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_today_study_plan",
+            "description": "Get the logged-in student's personalized study plan for today",
+            "parameters": {
+                "type": "object",
+                "properties": {}
             }
         }
     }
@@ -143,6 +197,10 @@ def run_agent(user_query: str, req_messages=None, user_id=None, token=None):
                     result = get_student_results(user_id, token)
                 elif tool_name == "get_upcoming_exams":
                     result = get_upcoming_exams(token)
+                elif tool_name == "get_exam_details":
+                    result = get_exam_details(args["exam_id"], token)
+                elif tool_name == "get_exam_questions":
+                    result = get_exam_questions(args["exam_id"], token)
                 elif tool_name == "get_attempt_details":
                     result = get_attempt_details(args["attempt_id"], token)
                 elif tool_name == "search_questions":
@@ -154,6 +212,10 @@ def run_agent(user_query: str, req_messages=None, user_id=None, token=None):
                     )
                 elif tool_name == "supported_exam_types":
                     result = supported_exam_types(token)
+                elif tool_name == "get_subjects":
+                    result = get_subjects(token)
+                elif tool_name == "get_today_study_plan":
+                    result = get_today_study_plan(token)
                 else:
                     result = {"error": "Unknown tool"}
             except Exception:

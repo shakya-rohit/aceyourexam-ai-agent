@@ -129,41 +129,36 @@ def run_agent(user_query: str, req_messages=None, user_id=None, token=None):
     # TOOL CALL HANDLING
     # -------------------------------
     if message.tool_calls:
-        tool_call = message.tool_calls[0]
-        tool_name = tool_call.function.name
-        args = json.loads(tool_call.function.arguments)
-
-        # Execute tool
-        if tool_name == "get_student_results":
-            result = get_student_results(user_id, token)
-        
-        elif tool_name == "get_upcoming_exams":
-            result = get_upcoming_exams(token)
-
-        elif tool_name == "get_attempt_details":
-            result = get_attempt_details(args["attempt_id"], token)
-
-        elif tool_name == "search_questions":
-            result = search_questions(
-                args.get("subject"),
-                args.get("topic"),
-                args.get("difficulty"),
-                token
-            )
-        
-        elif tool_name == "supported_exam_types":
-            result = supported_exam_types(token)
-            
-        else:
-            result = {"error": "Unknown tool"}
-
-        # Append tool response
+        # Include the assistant's complete tool request, then return one result
+        # for every call so the API can match each result by tool_call_id.
         messages.append(message)
-        messages.append({
-            "role": "tool",
-            "tool_call_id": tool_call.id,
-            "content": json.dumps(result)
-        })
+        for tool_call in message.tool_calls:
+            tool_name = tool_call.function.name
+            args = json.loads(tool_call.function.arguments)
+
+            if tool_name == "get_student_results":
+                result = get_student_results(user_id, token)
+            elif tool_name == "get_upcoming_exams":
+                result = get_upcoming_exams(token)
+            elif tool_name == "get_attempt_details":
+                result = get_attempt_details(args["attempt_id"], token)
+            elif tool_name == "search_questions":
+                result = search_questions(
+                    args.get("subject"),
+                    args.get("topic"),
+                    args.get("difficulty"),
+                    token
+                )
+            elif tool_name == "supported_exam_types":
+                result = supported_exam_types(token)
+            else:
+                result = {"error": "Unknown tool"}
+
+            messages.append({
+                "role": "tool",
+                "tool_call_id": tool_call.id,
+                "content": json.dumps(result)
+            })
 
         # Final LLM response
         final = client.chat.completions.create(

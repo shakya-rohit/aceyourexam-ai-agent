@@ -10,6 +10,7 @@ from tools import (
 )
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+MAX_TOOL_ROUNDS = 5
 
 # -------------------------------
 # TOOL DEFINITIONS
@@ -116,19 +117,18 @@ def run_agent(user_query: str, req_messages=None, user_id=None, token=None):
     
     messages.append({"role": "user", "content": user_query})
 
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=messages,
-        tools=tools,
-        tool_choice="auto"
-    )
+    for _ in range(MAX_TOOL_ROUNDS):
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=messages,
+            tools=tools,
+            tool_choice="auto"
+        )
 
-    message = response.choices[0].message
+        message = response.choices[0].message
+        if not message.tool_calls:
+            return message.content
 
-    # -------------------------------
-    # TOOL CALL HANDLING
-    # -------------------------------
-    if message.tool_calls:
         # Include the assistant's complete tool request, then return one result
         # for every call so the API can match each result by tool_call_id.
         messages.append(message)
@@ -160,15 +160,12 @@ def run_agent(user_query: str, req_messages=None, user_id=None, token=None):
                 "content": json.dumps(result)
             })
 
-        # Final LLM response
-        final = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=messages
-        )
-
-        return final.choices[0].message.content
-
-    # -------------------------------
-    # DIRECT RESPONSE
-    # -------------------------------
-    return message.content
+    # Avoid silently ignoring another tool request if the model reaches the
+    # safety limit. The most recent tool results are in the conversation.
+    final = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=messages,
+        tools=tools,
+        tool_choice="none"
+    )
+    return final.choices[0].message.content
